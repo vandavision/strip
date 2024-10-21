@@ -15,6 +15,10 @@ class StripeService:
         return product, price
 
     def create_subscription(self, customer_id, price_id):
+        customer = stripe.Customer.retrieve(customer_id)
+        if not customer.invoice_settings.default_payment_method:
+            raise ValueError("Customer has no default payment method.")
+
         subscription = stripe.Subscription.create(
             customer=customer_id,
             items=[{'price': price_id}]
@@ -28,3 +32,16 @@ class StripeService:
         
         customer = stripe.Customer.create(**customer_data)
         return customer
+
+    def attach_payment_method(self, customer_id, payment_method_id):
+        payment_method = stripe.PaymentMethod.attach(
+            payment_method_id,
+            customer=customer_id
+        )
+        stripe.Customer.modify(
+            customer_id,
+            invoice_settings={
+                'default_payment_method': payment_method.id,
+            }
+        )
+        return payment_method

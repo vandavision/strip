@@ -3,8 +3,8 @@ from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from stripe_service import StripeService
 from webhook_handler import WebhookHandler
-from database import MongoService, PostgresService
-
+from database import MongoService
+import stripe
 load_dotenv()
 
 app = Flask(__name__)
@@ -36,8 +36,17 @@ def create_subscription():
     data = request.json
     customer_id = data.get('customer_id')
     price_id = data.get('price_id')
-    subscription = stripe_service.create_subscription(customer_id, price_id)
-    return jsonify(subscription)
+
+    if not customer_id or not price_id:
+        return jsonify({'error': 'Customer ID and Price ID are required'}), 400
+    
+    try:
+        subscription = stripe_service.create_subscription(customer_id, price_id)
+        db_service.save_subscription(subscription['id'], customer_id)
+        return jsonify(subscription), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 @app.route('/create-customer', methods=['POST'])
 def create_customer():
