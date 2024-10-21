@@ -29,13 +29,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  stripe-listen:
-    image: stripe/stripe-cli
-    command: listen --forward-to app:5000/webhook
-    environment:
-      - STRIPE_SECRET_KEY
-    depends_on:
-      - app
 volumes:
   mongo_data:
   postgres_data:
