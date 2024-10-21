@@ -48,11 +48,7 @@ def create_customer():
         return jsonify({'error': 'Email is required'}), 400
     try:
         customer = stripe_service.create_customer(email, name)
-        return jsonify({
-            'customer_id': customer.id,
-            'email': customer.email,
-            'name': customer.name
-        }), 201
+        return jsonify(customer), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
