@@ -20,3 +20,11 @@ class StripeService:
             items=[{'price': price_id}]
         )
         return subscription
+
+    def create_customer(self, email, name=None):
+        customer_data = {'email': email}
+        if name:
+            customer_data['name'] = name
+        
+        customer = stripe.Customer.create(**customer_data)
+        return customer
