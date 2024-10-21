@@ -1,16 +1,22 @@
-# docker-compose.yml
 version: '3.8'
 
 services:
-  web:
+  app:
     build: .
     ports:
-      - "8000:8000"
+      - "5000:5000"
     env_file:
-      - .env
+      - .env  # اضافه کردن فایل .env
     depends_on:
-      - postgres
       - mongo
+      - postgres
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
 
   postgres:
     image: postgres:latest
@@ -23,13 +29,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  mongo:
-    image: mongo:latest
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
-
 volumes:
-  postgres_data:
   mongo_data:
+  postgres_data:
