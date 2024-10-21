@@ -6,7 +6,7 @@ services:
     ports:
       - "5000:5000"
     env_file:
-      - .env  # اضافه کردن فایل .env
+      - .env
     depends_on:
       - mongo
       - postgres
