@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env  # اضافه کردن فایل .env
+    depends_on:
+      - mongo
+      - postgres
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: stripe_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  stripe-listen:
+    image: stripe/stripe-cli
+    command: listen --forward-to app:5000/webhook
+    environment:
+      - STRIPE_SECRET_KEY
+    depends_on:
+      - app
+volumes:
+  mongo_data:
+  postgres_data:
