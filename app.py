@@ -23,15 +23,10 @@ webhook_handler = WebhookHandler(WEBHOOK_SECRET, db_service)
 @app.route('/create-customer', methods=['POST'])
 def create_customer():
     data = request.json
-    email = data.get('email')
-    name = data.get('name')
-    if not email:
-        return jsonify({'error': 'Email is required'}), 400
-    try:
-        customer = stripe_service.create_customer(email, name)
-        return jsonify(customer), 201
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    customer_id = data.get('customer_id')
+    price_id = data.get('price_id')
+    subscription = stripe_service.create_subscription(customer_id, price_id)
+    return jsonify(subscription)
 
 
 @app.route('/create-product', methods=['POST'])
@@ -47,11 +42,17 @@ def create_product():
 
 @app.route('/create-subscription', methods=['POST'])
 def create_subscription():
+
     data = request.json
-    customer_id = data.get('customer_id')
-    price_id = data.get('price_id')
-    subscription = stripe_service.create_subscription(customer_id, price_id)
-    return jsonify(subscription)
+    email = data.get('email')
+    name = data.get('name')
+    if not email:
+        return jsonify({'error': 'Email is required'}), 400
+    try:
+        customer = stripe_service.create_customer(email, name)
+        return jsonify(customer), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
