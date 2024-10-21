@@ -20,15 +20,6 @@ db_service = MongoService(MONGO_URI, 'stripe_db')
 stripe_service = StripeService(STRIPE_SECRET_KEY)
 webhook_handler = WebhookHandler(WEBHOOK_SECRET, db_service)
 
-@app.route('/create-customer', methods=['POST'])
-def create_customer():
-    data = request.json
-    customer_id = data.get('customer_id')
-    price_id = data.get('price_id')
-    subscription = stripe_service.create_subscription(customer_id, price_id)
-    return jsonify(subscription)
-
-
 @app.route('/create-product', methods=['POST'])
 def create_product():
     data = request.json
@@ -42,7 +33,14 @@ def create_product():
 
 @app.route('/create-subscription', methods=['POST'])
 def create_subscription():
+    data = request.json
+    customer_id = data.get('customer_id')
+    price_id = data.get('price_id')
+    subscription = stripe_service.create_subscription(customer_id, price_id)
+    return jsonify(subscription)
 
+@app.route('/create-customer', methods=['POST'])
+def create_customer():
     data = request.json
     email = data.get('email')
     name = data.get('name')
@@ -53,6 +51,7 @@ def create_subscription():
         return jsonify(customer), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
