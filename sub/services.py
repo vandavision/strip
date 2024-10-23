@@ -18,20 +18,15 @@ class StripeService:
         except stripe.error.StripeError as e:
             raise ValueError(f"Error creating product or price: {str(e)}")
 
-    def attach_payment_method(self, customer_id):
-        default_payment_method_id = 'pm_default_method_id'
+    def create_payment_method(self, card_details):
         try:
-            payment_method = stripe.PaymentMethod.attach(
-                default_payment_method_id,
-                customer=customer_id
-            )
-            stripe.Customer.modify(
-                customer_id,
-                invoice_settings={'default_payment_method': payment_method.id}
+            payment_method = stripe.PaymentMethod.create(
+                type="card",
+                card=card_details
             )
             return payment_method
-        except stripe.error.StripeError as e:
-            raise ValueError(f"Error attaching payment method: {str(e)}")
+        except Exception as e:
+            raise ValueError(f"Error creating payment method: {str(e)}")
 
     def create_subscription(self, customer_id, price_id):
         try:
