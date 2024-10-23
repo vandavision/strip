@@ -1,4 +1,5 @@
 import stripe
+from .models import Subscription
 
 class StripeService:
     def __init__(self, secret_key):
@@ -17,17 +18,16 @@ class StripeService:
         except stripe.error.StripeError as e:
             raise ValueError(f"Error creating product or price: {str(e)}")
 
-    def attach_payment_method(self, customer_id, payment_method_id):
+    def attach_payment_method(self, customer_id):
+        default_payment_method_id = 'pm_default_method_id'
         try:
             payment_method = stripe.PaymentMethod.attach(
-                payment_method_id,
+                default_payment_method_id,
                 customer=customer_id
             )
             stripe.Customer.modify(
                 customer_id,
-                invoice_settings={
-                    'default_payment_method': payment_method.id,
-                }
+                invoice_settings={'default_payment_method': payment_method.id}
             )
             return payment_method
         except stripe.error.StripeError as e:
@@ -35,11 +35,6 @@ class StripeService:
 
     def create_subscription(self, customer_id, price_id):
         try:
-            customer = stripe.Customer.retrieve(customer_id)
-
-            if not customer.invoice_settings.default_payment_method:
-                raise ValueError("Customer has no default payment method.")
-
             subscription = stripe.Subscription.create(
                 customer=customer_id,
                 items=[{'price': price_id}]
@@ -58,3 +53,8 @@ class StripeService:
             return customer
         except stripe.error.StripeError as e:
             raise ValueError(f"Error creating customer: {str(e)}")
+
+class DatabaseService:
+    def save_subscription(self, subscription_id, customer_id):
+        subscription = Subscription(subscription_id=subscription_id, customer_id=customer_id)
+        subscription.save()
