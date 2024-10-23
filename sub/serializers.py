@@ -17,3 +17,9 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subscription
         fields = ['subscription_id', 'customer_id']
+
+class CreatePaymentMethodSerializer(serializers.Serializer):
+    number = serializers.CharField(max_length=16)
+    exp_month = serializers.IntegerField()
+    exp_year = serializers.IntegerField()
+    cvc = serializers.CharField(max_length=3)

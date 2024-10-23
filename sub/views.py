@@ -1,3 +1,4 @@
+import os
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -5,9 +6,7 @@ from .services import StripeService, DatabaseService
 from .serializers import (
     CreateCustomerSerializer,
     CreateProductSerializer,
-    CreateSubscriptionSerializer,
-)
-import os
+    CreateSubscriptionSerializer,)
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -26,8 +25,6 @@ class CreateCustomerView(APIView):
 
             try:
                 customer = self.stripe_service.create_customer(email, name)
-                # Attach the default payment method
-                self.stripe_service.attach_payment_method(customer.id)
                 return Response(customer, status=status.HTTP_201_CREATED)
             except ValueError as e:
                 return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -86,9 +83,14 @@ class AttachPaymentMethodView(APIView):
         super().__init__(*args, **kwargs)
 
     def post(self, request):
-        return Response(
-            {
-                'message': 'Default payment method is already attached to the customer.'
-            }, status=status.HTTP_200_OK
-        )
+        payment_method_id = request.data.get('payment_method_id')
+        customer_id = request.data.get('customer_id')
 
+        if not payment_method_id or not customer_id:
+            return Response({'error': 'Payment Method ID and Customer ID are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            self.stripe_service.attach_payment_method(payment_method_id, customer_id)
+            return Response({'message': 'Payment method attached successfully'}, status=status.HTTP_200_OK)
+        except ValueError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
