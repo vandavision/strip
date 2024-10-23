@@ -26,18 +26,8 @@ class CreateCustomerView(APIView):
 
             try:
                 customer = self.stripe_service.create_customer(email, name)
-                
-                # Create a payment method
-                payment_method = self.stripe_service.create_payment_method({
-                    "number": "4242424242424242",  # Example card number
-                    "exp_month": 12,
-                    "exp_year": 2024,
-                    "cvc": "123",
-                })
-
-                # Attach the payment method to the customer
-                self.stripe_service.attach_payment_method(customer.id, payment_method.id)
-
+                # Attach the default payment method
+                self.stripe_service.attach_payment_method(customer.id)
                 return Response(customer, status=status.HTTP_201_CREATED)
             except ValueError as e:
                 return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -101,3 +91,4 @@ class AttachPaymentMethodView(APIView):
                 'message': 'Default payment method is already attached to the customer.'
             }, status=status.HTTP_200_OK
         )
+
